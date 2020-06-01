@@ -1,5 +1,5 @@
-import runTest from './helpers/runTest';
+import { testBuildApp } from './helpers/runTest';
 
 describe('remax define', () => {
-  runTest('define');
+  testBuildApp('define');
 });

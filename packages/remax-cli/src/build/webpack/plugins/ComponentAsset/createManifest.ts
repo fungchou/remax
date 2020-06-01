@@ -1,15 +1,13 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import { nativeComponents } from '@remax/macro';
-import { matcher } from '../../../../extensions';
 import readManifest from '../../../../readManifest';
 import { isPluginPath } from '../../../utils/nativeComponent';
 import { compilation } from 'webpack';
-import { Options, EntryInfo } from '@remax/types';
-import * as cacheable from './cacheable';
-import { pageConfigFile } from '../../../utils/paths';
+import { Options } from '@remax/types';
+import { componentConfigFile } from '../../../utils/paths';
 import winPath from '../../../../winPath';
-import API from '../../../../API';
+import SourceCache from '../../../../SourceCache';
 
 const NATIVE_COMPONENT_OUTPUT_DIR = 'remaxVendors';
 
@@ -25,10 +23,8 @@ function getNativeComponentAssetOutputPath(sourcePath: string, options: Options)
   );
 }
 
-function getUsingComponents(modules: string[], options: Options, compilation: compilation.Compilation) {
-  const components = Array.from(nativeComponents.values()).filter(component =>
-    component.importers.some(importer => modules.includes(importer))
-  );
+function getUsingComponents(options: Options, compilation: compilation.Compilation) {
+  const components = Array.from(nativeComponents.values());
 
   return components.reduce<any>((config, component) => {
     component.assets.forEach(asset => {
@@ -53,38 +49,23 @@ function getUsingComponents(modules: string[], options: Options, compilation: co
   }, {});
 }
 
-export default function createPageManifest(
-  options: Options,
-  page: EntryInfo,
-  modules: string[],
-  compilation: compilation.Compilation,
-  api: API
-) {
-  const rootPath = winPath(path.join(options.cwd, options.rootDir) + '/');
-  const manifestPath = page.filename.replace(matcher, '.json').replace(rootPath, '');
-  const config = readManifest(pageConfigFile(page.filename), options.target!);
-  const usingComponents = getUsingComponents(modules, options, compilation);
+export default function createManifest(options: Options, compilation: compilation.Compilation, cache: SourceCache) {
+  const manifestPath = 'index.json';
+  const config = readManifest(componentConfigFile(options), options.target!);
+  const usingComponents = getUsingComponents(options, compilation);
 
+  config.component = true;
   config.usingComponents = {
     ...(config.usingComponents || {}),
     ...usingComponents,
   };
 
-  const source = JSON.stringify(
-    api.onPageConfig({
-      page: page.name,
-      config,
-    }),
-    null,
-    2
-  );
+  const source = JSON.stringify(config, null, 2);
 
-  if (!cacheable.invalid(manifestPath, source)) {
-    return;
-  }
-
-  compilation.assets[manifestPath] = {
-    source: () => source,
-    size: () => Buffer.byteLength(source),
-  };
+  cache.invalid(manifestPath, source, () => {
+    compilation.assets[manifestPath] = {
+      source: () => source,
+      size: () => Buffer.byteLength(source),
+    };
+  });
 }

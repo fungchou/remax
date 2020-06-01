@@ -8,13 +8,7 @@ import { Options } from '@remax/types';
 import { Platform } from '@remax/types';
 import ejs from 'ejs';
 import extensions, { moduleMatcher } from '../../extensions';
-import getEntries from '../../getEntries';
-import * as TurboPages from '../utils/turboPages';
-import * as staticCompiler from '../babel/compiler/static';
-import appEntry from '../babel/app';
-import pageEntry from '../babel/page';
 import pageEvent from '../babel/pageEvent';
-import appEvent from '../babel/appEvent';
 import fixRegeneratorRuntime from '../babel/fixRegeneratorRuntime';
 import componentManifest from '../babel/componentManifest';
 import * as RemaxPlugins from './plugins';
@@ -23,6 +17,8 @@ import { cssConfig, addCSSRule, RuleConfig } from './config/css';
 import baseConfig from './baseConfig';
 import fs from 'fs';
 import winPath from '../../winPath';
+import componentEntry from '../babel/component';
+import { searchJSFile } from '../utils/paths';
 
 function prepare(api: API, options: Options, target: Platform) {
   const meta = api.getMeta();
@@ -54,13 +50,11 @@ export default function webpackConfig(api: API, options: Options, target: Platfo
 
   baseConfig(config, options, target);
 
-  const { meta, turboPagesEnabled, stubModules, publicPath } = prepare(api, options, target);
-  const { app, pages } = getEntries(options, api);
+  const { meta, stubModules, publicPath } = prepare(api, options, target);
 
-  config.entry(app.name).add(app.filename);
-  pages.forEach(p => {
-    config.entry(p.name).add(p.filename);
-  });
+  const entry = searchJSFile(path.join(options.cwd, options.rootDir, 'index'));
+
+  config.entry('index').add(entry);
 
   config.devtool(false);
 
@@ -70,77 +64,27 @@ export default function webpackConfig(api: API, options: Options, target: Platfo
       .concat(extensions.map(ext => `.mini${ext}`))
       .concat(extensions)
   );
+  config.externals({
+    react: 'require("react")',
+    '@remax/runtime': 'require("@remax/runtime")',
+  });
   config.output.filename('[name].js');
   config.output.globalObject(meta.global);
   config.output.publicPath(publicPath);
-  config.optimization.runtimeChunk({ name: 'runtime' });
-  config.optimization.splitChunks({
-    cacheGroups: {
-      remaxVendors: {
-        name: 'remax-vendors',
-        test: moduleMatcher,
-        chunks: 'initial',
-        minChunks: 2,
-        minSize: 0,
-      },
-    },
-  });
   config.optimization.minimize(false);
 
   config.module
     .rule('config')
     .pre()
-    .test(filename => {
-      const { app, pages } = getEntries(options, api);
-      if (winPath(filename) === app.filename) {
-        return true;
-      }
-      if (pages.find(p => p.filename === winPath(filename))) {
-        return true;
-      }
-      return false;
-    })
+    .test(entry)
     .use('babel')
     .loader('babel')
     .options({
       babelrc: false,
       configFile: resolveBabelConfig(options),
-      usePlugins: [appEntry(app.filename), pageEntry(options, api)],
+      usePlugins: [componentEntry()],
       reactPreset: false,
     });
-
-  // turbo pages
-  if (turboPagesEnabled) {
-    // webpack chain 的配置顺序是反过来的
-    config.module
-      .rule('turbo-page')
-      .pre()
-      .use('turbo-page-postprocess')
-      .loader('babel')
-      .options({
-        usePlugins: [staticCompiler.postProcess],
-        reactPreset: false,
-      })
-      .end()
-      .test(moduleMatcher)
-      .use('turbo-page-render')
-      .loader('babel')
-      .options({
-        usePlugins: [staticCompiler.render.bind(null, api)],
-        reactPreset: false,
-      })
-      .end()
-      .test(filename => {
-        const { pages } = getEntries(options, api);
-        return !!TurboPages.filter(pages, options).find(p => p.filename === winPath(filename));
-      })
-      .use('turbo-page-preprocess')
-      .loader('babel')
-      .options({
-        usePlugins: [staticCompiler.preprocess],
-        reactPreset: false,
-      });
-  }
 
   config.module
     .rule('js')
@@ -150,7 +94,7 @@ export default function webpackConfig(api: API, options: Options, target: Platfo
     .options({
       babelrc: false,
       configFile: resolveBabelConfig(options),
-      usePlugins: [appEvent(app.filename), pageEvent(options), componentManifest(api, config), fixRegeneratorRuntime()],
+      usePlugins: [pageEvent(options), componentManifest(api, config), fixRegeneratorRuntime()],
       reactPreset: true,
       api,
       compact: process.env.NODE_ENV === 'production',
@@ -179,21 +123,11 @@ export default function webpackConfig(api: API, options: Options, target: Platfo
     .use('file')
     .loader(require.resolve('file-loader'));
 
-  const pluginTemplate = fs.readFileSync(path.resolve(__dirname, '../../../template/plugin.js.ejs'), 'utf-8');
-  const pluginPath = winPath('node_modules/@remax/runtime-plugin.js');
-  const virtualModules = new VirtualModulesPlugin({
-    [pluginPath]: ejs.render(pluginTemplate, {
-      pluginFiles: api.getRuntimePluginFiles(),
-    }),
-  });
-  config.plugin('webpack-virtual-modules').use(virtualModules);
-
   config.plugin('webpackbar').use(WebpackBar, [{ name: target }]);
 
   config.plugin('mini-css-extract-plugin').use(MiniCssExtractPlugin, [{ filename: `[name]${meta.style}` }]);
   config.plugin('remax-optimize-entries-plugin').use(RemaxPlugins.OptimizeEntries, [meta]);
-  config.plugin('remax-app-asset-plugin').use(RemaxPlugins.AppAsset, [options, api]);
-  config.plugin('remax-page-asset-plugin').use(RemaxPlugins.PageAsset, [options, api]);
+  config.plugin('remax-component-asset-plugin').use(RemaxPlugins.ComponentAsset, [options, api]);
   config.plugin('remax-define-plugin').use(RemaxPlugins.Define, [options, api]);
   config.plugin('remax-coverage-ignore-plugin').use(RemaxPlugins.CoverageIgnore);
 
