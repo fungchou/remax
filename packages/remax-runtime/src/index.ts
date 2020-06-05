@@ -3,6 +3,7 @@ export { default as PluginDriver } from './PluginDriver';
 export { default as createAppConfig } from './createAppConfig';
 export { default as createPageConfig } from './createPageConfig';
 export { default as createNativeComponent } from './createNativeComponent';
+export { default as runtimeOptions, apply as applyRuntimeOptions } from './RuntimeOptions';
 export { createHostComponent } from '@remax/shared';
 export * from './hooks';
 

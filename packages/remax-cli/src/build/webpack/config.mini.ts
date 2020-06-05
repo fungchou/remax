@@ -182,9 +182,19 @@ export default function webpackConfig(api: API, options: Options, target: Platfo
 
   const pluginTemplate = fs.readFileSync(path.resolve(__dirname, '../../../template/plugin.js.ejs'), 'utf-8');
   const pluginPath = slash('node_modules/@remax/runtime-plugin.js');
+
+  const runtimeOptionsTemplate = fs.readFileSync(
+    path.resolve(__dirname, '../../../template/runtimeOptions.js.ejs'),
+    'utf-8'
+  );
+  const runtimeOptionsPath = slash('node_modules/@remax/apply-runtime-options.js');
+
   const virtualModules = new VirtualModulesPlugin({
     [pluginPath]: ejs.render(pluginTemplate, {
       pluginFiles: api.getRuntimePluginFiles(),
+    }),
+    [runtimeOptionsPath]: ejs.render(runtimeOptionsTemplate, {
+      pxToRpx: options.pxToRpx,
     }),
   });
   config.plugin('webpack-virtual-modules').use(virtualModules);
