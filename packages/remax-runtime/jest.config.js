@@ -37,7 +37,5 @@ module.exports = {
         'onTabItemTap',
       ],
     },
-    __REMAX_PX2RPX__: true,
-    __REMAX_DEBUG__: false,
   },
 };

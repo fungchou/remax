@@ -2,6 +2,7 @@ import VNode, { RawNode } from './VNode';
 import { generate } from './instanceId';
 import { FiberRoot } from 'react-reconciler';
 import nativeEffector from './nativeEffect';
+import RuntimeOptions from './RuntimeOptions';
 
 interface SpliceUpdate {
   path: string;
@@ -74,7 +75,7 @@ export default class Container {
             callback = () => {
               nativeEffector.run();
               /* istanbul ignore next */
-              if (__REMAX_DEBUG__) {
+              if (RuntimeOptions.debug) {
                 console.log(`setData => 回调时间：${new Date().getTime() - startTime}ms`);
               }
             };
@@ -128,7 +129,7 @@ export default class Container {
     this.context.setData(updatePayload, () => {
       nativeEffector.run();
       /* istanbul ignore next */
-      if (__REMAX_DEBUG__) {
+      if (RuntimeOptions.debug) {
         console.log(`setData => 回调时间：${new Date().getTime() - startTime}ms`, updatePayload);
       }
     });

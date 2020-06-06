@@ -190,6 +190,7 @@ export default function webpackConfig(api: API, options: Options, target: Platfo
   const virtualModules = new VirtualModulesPlugin({
     [runtimeOptionsPath]: ejs.render(runtimeOptionsTemplate, {
       pxToRpx: options.pxToRpx,
+      debug: !!process.env.REMAX_DEBUG,
       pluginFiles: api.getRuntimePluginFiles(),
     }),
   });
