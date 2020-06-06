@@ -192,6 +192,8 @@ export default function webpackConfig(api: API, options: Options, target: Platfo
     debug: !!process.env.REMAX_DEBUG,
     pluginFiles: api.getRuntimePluginFiles(),
     hostComponents: '[]',
+    pageEvents: '{}',
+    appEvents: '[]',
   };
 
   const virtualModules = new VirtualModulesPlugin({
@@ -220,7 +222,7 @@ export default function webpackConfig(api: API, options: Options, target: Platfo
   config.plugin('mini-css-extract-plugin').use(MiniCssExtractPlugin, [{ filename: `[name]${meta.style}` }]);
   config.plugin('remax-optimize-entries-plugin').use(RemaxPlugins.OptimizeEntries, [meta]);
   config.plugin('remax-native-files-plugin').use(RemaxPlugins.NativeFiles, [options, api]);
-  config.plugin('remax-define-plugin').use(RemaxPlugins.Define, [options, api, updateRuntimeOptions]);
+  config.plugin('remax-runtime-options-plugin').use(RemaxPlugins.RuntimeOptions, [options, api, updateRuntimeOptions]);
   config.plugin('remax-coverage-ignore-plugin').use(RemaxPlugins.CoverageIgnore);
 
   if (options.analyze) {

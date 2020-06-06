@@ -3,9 +3,9 @@ interface RuntimeOptions {
   pxToRpx: boolean;
   debug: boolean;
   hostComponents: any;
-  appEvents: any[];
-  pageEvents: any[];
   pluginDriver: PluginDriver;
+  pageEvents: Record<string, string[]>;
+  appEvents: string[];
 }
 
 let runtimeOptions: RuntimeOptions = {
@@ -13,7 +13,7 @@ let runtimeOptions: RuntimeOptions = {
   hostComponents: {},
   debug: false,
   appEvents: [],
-  pageEvents: [],
+  pageEvents: {},
   pluginDriver: new PluginDriver([]),
 };
 

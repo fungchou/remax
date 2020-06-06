@@ -7,14 +7,14 @@ import getModules from '../../utils/modules';
 import { getPages } from '../../../getEntries';
 import API from '../../../API';
 
-const PLUGIN_NAME = 'RemaxDefinePlugin';
+const PLUGIN_NAME = 'RemaxRuntimeOptionsPlugin';
 
 type Events = Set<string>;
 
 export const pageClassEvents = new Map<string, Events>();
 export const appClassEvents = new Map<string, Events>();
 
-export default class DefinePlugin {
+export default class RuntimeOptionsPlugin {
   remaxOptions: Options;
   api: API;
   updateRuntimeOptions: Function;
@@ -26,31 +26,12 @@ export default class DefinePlugin {
   }
 
   apply(compiler: Compiler) {
-    compiler.hooks.compilation.tap(PLUGIN_NAME, () => {
-      this.updateRuntimeOptions({
-        hostComponents: this.stringifyHostComponents(),
-      });
-    });
-
     compiler.hooks.thisCompilation.tap(PLUGIN_NAME, (compilation: compilation.Compilation) => {
       compilation.hooks.optimizeChunkAssets.tapAsync(PLUGIN_NAME, (chunks, callback) => {
-        compilation.chunkGroups.forEach(group => {
-          group.chunks.forEach((chunk: any) => {
-            const chunkPath = chunk.name + '.js';
-            const source = new ReplaceSource(compilation.assets[chunkPath]);
-
-            const startB = this.getReplaceStartIndex(source, /__REMAX_APP_EVENTS__/);
-            const startC = this.getReplaceStartIndex(source, /__REMAX_PAGE_EVENTS__/);
-
-            if (startB) {
-              source.replace(startB, startB + 19, this.stringifyAppEvents());
-            }
-            if (startC) {
-              source.replace(startC, startC + 20, this.stringifyPageEvents(compilation));
-            }
-
-            compilation.assets[chunkPath] = source;
-          });
+        this.updateRuntimeOptions({
+          hostComponents: this.stringifyHostComponents(),
+          pageEvents: this.stringifyPageEvents(compilation),
+          appEvents: this.stringifyAppEvents(),
         });
 
         callback();

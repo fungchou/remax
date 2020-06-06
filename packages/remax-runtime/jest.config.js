@@ -8,7 +8,6 @@ module.exports = {
     'ts-jest': {
       isolatedModules: true,
     },
-    __REMAX_HOST_COMPONENTS__: {},
     __REMAX_APP_EVENTS__: [
       'onLaunch',
       'onShow',
