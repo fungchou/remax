@@ -1,4 +1,4 @@
-import { applyRuntimeOptions } from '@remax/runtime';
+import { RuntimeOptions } from '@remax/runtime';
 import { PluginDriver } from '@remax/runtime';
 
 const pluginDriver = new PluginDriver([
@@ -8,7 +8,8 @@ const pluginDriver = new PluginDriver([
 ].map(p => p.default || p));
 
 
-applyRuntimeOptions({
+RuntimeOptions.apply({
   pxToRpx: <%- pxToRpx %>,
   pluginDriver,
+  hostComponents: <%- hostComponents %>
 })

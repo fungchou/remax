@@ -1,7 +1,6 @@
 import './polyfills/Function';
-// import '@remax/apply-runtime-options';
 import * as React from 'react';
-import RuntimeOptions from './RuntimeOptions';
+import * as RuntimeOptions from './RuntimeOptions';
 import render from './render';
 import AppContainer from './AppContainer';
 import isClassComponent from './utils/isClassComponent';
@@ -114,7 +113,7 @@ export default function createAppConfig(this: any, App: any) {
       }
     });
 
-    return RuntimeOptions.pluginDriver.onAppConfig(config);
+    return RuntimeOptions.get('pluginDriver').onAppConfig(config);
   };
 
   return createConfig(App);

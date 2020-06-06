@@ -187,12 +187,15 @@ export default function webpackConfig(api: API, options: Options, target: Platfo
   const runtimeOptionsPath = slash('node_modules/@remax/apply-runtime-options.js');
   config.entry(app.name).prepend('@remax/apply-runtime-options');
 
+  const runtimeOptions = {
+    pxToRpx: options.pxToRpx,
+    debug: !!process.env.REMAX_DEBUG,
+    pluginFiles: api.getRuntimePluginFiles(),
+    hostComponents: '[]',
+  };
+
   const virtualModules = new VirtualModulesPlugin({
-    [runtimeOptionsPath]: ejs.render(runtimeOptionsTemplate, {
-      pxToRpx: options.pxToRpx,
-      debug: !!process.env.REMAX_DEBUG,
-      pluginFiles: api.getRuntimePluginFiles(),
-    }),
+    [runtimeOptionsPath]: ejs.render(runtimeOptionsTemplate, runtimeOptions),
   });
   config.plugin('webpack-virtual-modules').use(virtualModules);
 
@@ -203,11 +206,21 @@ export default function webpackConfig(api: API, options: Options, target: Platfo
       .use(CopyPlugin, [[{ from: publicDirPath, to: path.join(options.cwd, options.output) }]]);
   }
 
+  function updateRuntimeOptions(options: any) {
+    virtualModules.writeModule(
+      runtimeOptionsPath,
+      ejs.render(runtimeOptionsTemplate, {
+        ...runtimeOptions,
+        ...options,
+      })
+    );
+  }
+
   config.plugin('webpackbar').use(WebpackBar, [{ name: target }]);
   config.plugin('mini-css-extract-plugin').use(MiniCssExtractPlugin, [{ filename: `[name]${meta.style}` }]);
   config.plugin('remax-optimize-entries-plugin').use(RemaxPlugins.OptimizeEntries, [meta]);
   config.plugin('remax-native-files-plugin').use(RemaxPlugins.NativeFiles, [options, api]);
-  config.plugin('remax-define-plugin').use(RemaxPlugins.Define, [options, api]);
+  config.plugin('remax-define-plugin').use(RemaxPlugins.Define, [options, api, updateRuntimeOptions]);
   config.plugin('remax-coverage-ignore-plugin').use(RemaxPlugins.CoverageIgnore);
 
   if (options.analyze) {

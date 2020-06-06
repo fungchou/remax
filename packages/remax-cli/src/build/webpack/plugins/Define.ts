@@ -17,13 +17,21 @@ export const appClassEvents = new Map<string, Events>();
 export default class DefinePlugin {
   remaxOptions: Options;
   api: API;
+  updateRuntimeOptions: Function;
 
-  constructor(options: Options, api: API) {
+  constructor(options: Options, api: API, updateRuntimeOptions: Function) {
     this.remaxOptions = options;
     this.api = api;
+    this.updateRuntimeOptions = updateRuntimeOptions;
   }
 
   apply(compiler: Compiler) {
+    compiler.hooks.compilation.tap(PLUGIN_NAME, () => {
+      this.updateRuntimeOptions({
+        hostComponents: this.stringifyHostComponents(),
+      });
+    });
+
     compiler.hooks.thisCompilation.tap(PLUGIN_NAME, (compilation: compilation.Compilation) => {
       compilation.hooks.optimizeChunkAssets.tapAsync(PLUGIN_NAME, (chunks, callback) => {
         compilation.chunkGroups.forEach(group => {
@@ -33,7 +41,6 @@ export default class DefinePlugin {
 
             const startB = this.getReplaceStartIndex(source, /__REMAX_APP_EVENTS__/);
             const startC = this.getReplaceStartIndex(source, /__REMAX_PAGE_EVENTS__/);
-            const startD = this.getReplaceStartIndex(source, /__REMAX_HOST_COMPONENTS__/);
 
             if (startB) {
               source.replace(startB, startB + 19, this.stringifyAppEvents());
@@ -42,9 +49,6 @@ export default class DefinePlugin {
               source.replace(startC, startC + 20, this.stringifyPageEvents(compilation));
             }
 
-            if (startD) {
-              source.replace(startD, startD + 24, this.stringifyHostComponents());
-            }
             compilation.assets[chunkPath] = source;
           });
         });

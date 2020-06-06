@@ -24,4 +24,6 @@ export function apply(options: RuntimeOptions) {
   };
 }
 
-export default runtimeOptions;
+export function get(key: keyof RuntimeOptions) {
+  return runtimeOptions[key];
+}
