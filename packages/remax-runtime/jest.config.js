@@ -8,33 +8,5 @@ module.exports = {
     'ts-jest': {
       isolatedModules: true,
     },
-    __REMAX_APP_EVENTS__: [
-      'onLaunch',
-      'onShow',
-      'onHide',
-      'onShareAppMessage',
-      'onPageNotFound',
-      'onError',
-      'onUnhandledRejection',
-      'onThemeChange',
-    ],
-    __REMAX_PAGE_EVENTS__: {
-      'pages/test/only/onshow': ['onShow'],
-      'pages/test/index': [
-        'onShow',
-        'onHide',
-        'onPullDownRefresh',
-        'onPullIntercept',
-        'onReachBottom',
-        'onPageScroll',
-        'onShareAppMessage',
-        'onTitleClick',
-        'onOptionMenuClick',
-        'onPopMenuClick',
-        'onReady',
-        'onResize',
-        'onTabItemTap',
-      ],
-    },
   },
 };
