@@ -1,9 +1,11 @@
+import PluginDriver from './PluginDriver';
 interface RuntimeOptions {
   pxToRpx: boolean;
   debug: boolean;
   hostComponents: any;
   appEvents: any[];
   pageEvents: any[];
+  pluginDriver: PluginDriver;
 }
 
 let runtimeOptions: RuntimeOptions = {
@@ -12,6 +14,7 @@ let runtimeOptions: RuntimeOptions = {
   debug: false,
   appEvents: [],
   pageEvents: [],
+  pluginDriver: new PluginDriver([]),
 };
 
 export function apply(options: RuntimeOptions) {

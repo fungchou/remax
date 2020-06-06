@@ -9,7 +9,7 @@ export default (options: Options, target: Platform) => {
   const config: Alias = {
     '@': path.resolve(options.cwd, options.rootDir),
     // 配合 webpack-virtual-modules
-    '@remax/runtime-plugin': path.join(options.cwd, 'node_modules/@remax/runtime-plugin.js'),
+    '@remax/runtime-options': path.join(options.cwd, 'node_modules/@remax/apply-runtime-options.js'),
   };
 
   if (target !== Platform.web) {

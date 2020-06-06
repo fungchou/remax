@@ -180,21 +180,17 @@ export default function webpackConfig(api: API, options: Options, target: Platfo
     .use('file')
     .loader(require.resolve('file-loader'));
 
-  const pluginTemplate = fs.readFileSync(path.resolve(__dirname, '../../../template/plugin.js.ejs'), 'utf-8');
-  const pluginPath = slash('node_modules/@remax/runtime-plugin.js');
-
   const runtimeOptionsTemplate = fs.readFileSync(
-    path.resolve(__dirname, '../../../template/runtimeOptions.js.ejs'),
+    path.resolve(__dirname, '../../../template/apply-runtime-options.js.ejs'),
     'utf-8'
   );
   const runtimeOptionsPath = slash('node_modules/@remax/apply-runtime-options.js');
+  config.entry(app.name).prepend('@remax/apply-runtime-options');
 
   const virtualModules = new VirtualModulesPlugin({
-    [pluginPath]: ejs.render(pluginTemplate, {
-      pluginFiles: api.getRuntimePluginFiles(),
-    }),
     [runtimeOptionsPath]: ejs.render(runtimeOptionsTemplate, {
       pxToRpx: options.pxToRpx,
+      pluginFiles: api.getRuntimePluginFiles(),
     }),
   });
   config.plugin('webpack-virtual-modules').use(virtualModules);
