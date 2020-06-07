@@ -12,6 +12,9 @@
   "include": ["src/**/*", "typings/**/*"],
   "references": [
     {
+      "path": "../remax-runtime"
+    },
+    {
       "path": "../remax-types"
     },
     {
