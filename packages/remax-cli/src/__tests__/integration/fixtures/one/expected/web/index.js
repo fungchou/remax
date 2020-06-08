@@ -90,6 +90,7 @@ var app_config = {
     }]
   }
 };
+var history = app_config.historyType === 'hash' ? Object(remax_web__WEBPACK_IMPORTED_MODULE_3__["createHashHistory"])() : Object(remax_web__WEBPACK_IMPORTED_MODULE_3__["createBrowserHistory"])();
 var AppConfig = Object(remax__WEBPACK_IMPORTED_MODULE_2__["createAppConfig"])(_app__WEBPACK_IMPORTED_MODULE_0__["default"]);
 
 function TabBar() {
@@ -100,7 +101,7 @@ function TabBar() {
 
   react__WEBPACK_IMPORTED_MODULE_1__["useEffect"](function () {
     setCurrentPath(window.location.pathname);
-    return remax_web__WEBPACK_IMPORTED_MODULE_3__["history"].listen(function (location, action) {
+    return history.listen(function (location, action) {
       setCurrentPath(location.pathname);
     });
   }, []);
@@ -148,7 +149,7 @@ function TabBar() {
 }
 
 Object(remax_web__WEBPACK_IMPORTED_MODULE_3__["render"])( /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1__["createElement"](AppConfig, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1__["createElement"](remax_web__WEBPACK_IMPORTED_MODULE_3__["Router"], {
-  history: remax_web__WEBPACK_IMPORTED_MODULE_3__["history"]
+  history: history
 }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1__["createElement"](remax_web__WEBPACK_IMPORTED_MODULE_3__["CacheSwitch"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1__["createElement"](remax_web__WEBPACK_IMPORTED_MODULE_3__["Route"], {
   exact: true,
   path: "/"
